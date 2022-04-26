@@ -1,15 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Threading.Tasks;
 using System;
+using UnityEngine.UI;
 
-public class MagicSystem : MonoBehaviour
+public class PlayerMagicSystem : MonoBehaviour
 {
     [SerializeField] private Spell spellToCast;
     [SerializeField] private float maxMana;
     [SerializeField] private float minMana;
     [SerializeField] private float currentMana;
-    [SerializeField] private float baseManaRegeneration;
+    [SerializeField] private float baseManaRegeneration = .25f;
     [SerializeField] private float baseCastSpeed;
     [SerializeField] private float castTime = 0.25f;
     [SerializeField] private Transform castPoint;
@@ -22,6 +22,8 @@ public class MagicSystem : MonoBehaviour
     private bool casting = false;
     private bool holdingCast = false;
     private Controls controls;
+    [SerializeField]
+    private GameObject manaBar;
 
     private void Awake()
     {
@@ -31,7 +33,7 @@ public class MagicSystem : MonoBehaviour
 
     private void Update()
     {
-
+        handleManaRegeneration();
         holdingCast = controls.Gameplay.CastSpell1.IsPressed();
         bool hasEnoughMana = currentMana - spellToCast.spellToCast.baseManaCost > 0f;
 
@@ -40,14 +42,13 @@ public class MagicSystem : MonoBehaviour
             if (!casting && hasEnoughMana)
             {
                 casting = true;
-                currentMana -= spellToCast.spellToCast.totalManaCost;
+                handleMana();
                 currentCastTimer = 0;
                 MovementSystem.agent.SetDestination(this.transform.position);
                 MovementSystem.agent.isStopped = true;
                 rotateTowardMouse(this.transform);
                 castSpell();
                 MovementSystem.agent.isStopped = false;
-
             }
 
 
@@ -59,10 +60,13 @@ public class MagicSystem : MonoBehaviour
             }
 
         }
+        //Apply Updated mana values every frame to healt
+        if (manaBar.TryGetComponent(out SliderScript slider)) slider.SetSlider(currentMana,maxMana);
+
 
     }
 
-    
+
     private void rotateTowardMouse(Transform obj)
     {
         Ray cameraRay = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
@@ -84,6 +88,16 @@ public class MagicSystem : MonoBehaviour
     {
         controls.Gameplay.Disable();
     }
+    
+    private void handleMana(){
+        //Set mana, Move mana bar.
+        currentMana -= spellToCast.spellToCast.totalManaCost;
+    }
+
+    private void handleManaRegeneration(){
+        if (currentMana + (baseManaRegeneration * Time.deltaTime) < 100) currentMana += (baseManaRegeneration * Time.deltaTime);
+        else if(currentMana + (baseManaRegeneration * Time.deltaTime) > 100) currentMana = maxMana;
+    }
 
     private void castSpell()
     {
@@ -91,3 +105,4 @@ public class MagicSystem : MonoBehaviour
         spell.gameObject.SetActive(true);
     }
 }
+

@@ -29,9 +29,15 @@ public class Spell : MonoBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
-    {
+    {   
+        handleEnemyCollision(other.gameObject);
         //Apply Spell effects.
         //Apply particles?
         Destroy(this.gameObject);
     }
+
+    private void handleEnemyCollision(GameObject enemy){
+        if(enemy.TryGetComponent(out HealthSystem health)) health.handleDamage(spellToCast.baseDamage);
+    }
+
 }

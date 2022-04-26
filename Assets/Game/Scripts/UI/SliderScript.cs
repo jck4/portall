@@ -5,7 +5,7 @@ public class SliderScript : MonoBehaviour
 {
     public Slider slider;
 
-    public void SetSlider(int sliderCurrent, int sliderMax){
+    public void SetSlider(float sliderCurrent, float sliderMax){
       slider.maxValue = sliderMax;
       slider.value = sliderCurrent;
     }
